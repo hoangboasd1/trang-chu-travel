@@ -1,0 +1,97 @@
+create database test 
+use test
+
+#Bai_1
+DELIMITER $$
+
+CREATE FUNCTION CalculateTax(salary DECIMAL(10,2))
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    DECLARE tax DECIMAL(10,2);
+
+    IF salary <= 5000000 THEN
+        SET tax = 0;
+    ELSEIF salary <= 10000000 THEN
+        SET tax = salary * 0.10;
+    ELSE
+        SET tax = salary * 0.20;
+    END IF;
+
+    RETURN tax;
+END $$
+
+DELIMITER ;
+
+SELECT CalculateTax(3000000)  AS Thue_3_Trieu;
+SELECT CalculateTax(8000000)  AS Thue_8_Trieu;
+SELECT CalculateTax(15000000) AS Thue_15_Trieu;
+
+#Bai_2
+CREATE TABLE employees (
+    emp_id INT AUTO_INCREMENT PRIMARY KEY,
+    emp_name VARCHAR(100),
+    emp_dept VARCHAR(50),
+    emp_salary DECIMAL(10,2)
+);
+
+DELIMITER $$
+
+CREATE PROCEDURE ManageEmployee(
+    IN action_type VARCHAR(10),
+    IN p_emp_id INT,
+    IN p_emp_name VARCHAR(100),
+    IN p_emp_dept VARCHAR(50),
+    IN p_emp_salary DECIMAL(10,2)
+)
+BEGIN
+    IF action_type = 'ADD' THEN
+        INSERT INTO employees(emp_name, emp_dept, emp_salary)
+        VALUES (p_emp_name, p_emp_dept, p_emp_salary);
+
+    ELSEIF action_type = 'UPDATE' THEN
+        UPDATE employees
+        SET emp_name = p_emp_name,
+            emp_dept = p_emp_dept,
+            emp_salary = p_emp_salary
+        WHERE emp_id = p_emp_id;
+
+    ELSEIF action_type = 'DELETE' THEN
+        DELETE FROM employees
+        WHERE emp_id = p_emp_id;
+
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Action type không hợp lệ';
+    END IF;
+END $$
+
+DELIMITER ;
+
+CALL ManageEmployee(
+    'ADD',
+    NULL,
+    'Nguyen Van C',
+    'IT',
+    14000000
+);
+
+CALL ManageEmployee(
+    'UPDATE',
+    1,
+    'Nguyen Van B',
+    'HR',
+    15000000
+);
+
+CALL ManageEmployee(
+    'DELETE',
+    1,
+    NULL,
+    NULL,
+    NULL
+);
+
+SELECT * FROM employees;
+
+
